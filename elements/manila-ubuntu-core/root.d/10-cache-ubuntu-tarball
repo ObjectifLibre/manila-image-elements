@@ -11,12 +11,11 @@ set -o pipefail
 [ -n "$TARGET_ROOT" ]
 
 shopt -s extglob
-
-DIB_CLOUD_IMAGES=${DIB_CLOUD_IMAGES:-http://cdimage.ubuntu.com/ubuntu-core/releases/}
+DIB_CLOUD_IMAGES=${DIB_CLOUD_IMAGES:-https://cloud-images.ubuntu.com/}
 DIB_RELEASE="trusty" # Note(u_glide): another releases not supported/tested
 DIB_RELEASE_NUM="14.04"
-BASE_IMAGE_FILE=${BASE_IMAGE_FILE:-ubuntu-core-$DIB_RELEASE_NUM-core-$ARCH.tar.gz}
-SHA256SUMS=${SHA256SUMS:-http://${DIB_CLOUD_IMAGES##http?(s)://}/$DIB_RELEASE/release/SHA256SUMS}
+BASE_IMAGE_FILE=${BASE_IMAGE_FILE:-trusty-server-cloudimg-$ARCH-root.tar.gz}
+SHA256SUMS=${SHA256SUMS:-https://cloud-images.ubuntu.com/$DIB_RELEASE/current/SHA256SUMS}
 CACHED_FILE=$DIB_IMAGE_CACHE/$BASE_IMAGE_FILE
 CACHED_FILE_LOCK=$DIB_IMAGE_CACHE/$BASE_IMAGE_FILE.lock
 CACHED_SUMS=$DIB_IMAGE_CACHE/SHA256SUMS.ubuntu.$DIB_RELEASE.$ARCH
@@ -28,7 +27,7 @@ function get_ubuntu_tarball {
         echo "Fetching Base Image"
         $TMP_HOOKS_PATH/bin/cache-url $SHA256SUMS $CACHED_SUMS
         $TMP_HOOKS_PATH/bin/cache-url \
-            $DIB_CLOUD_IMAGES/$DIB_RELEASE/release/$BASE_IMAGE_FILE $CACHED_FILE
+            $DIB_CLOUD_IMAGES/$DIB_RELEASE/current/$BASE_IMAGE_FILE $CACHED_FILE
         pushd $DIB_IMAGE_CACHE
         if ! grep "$BASE_IMAGE_FILE" $CACHED_SUMS | sha256sum --check - ; then
             # It is likely that an upstream http(s) proxy has given us a skewed
@@ -40,7 +39,7 @@ function get_ubuntu_tarball {
             $TMP_HOOKS_PATH/bin/cache-url -f $SHA256SUMS $CACHED_SUMS
             if ! grep "$BASE_IMAGE_FILE" $CACHED_SUMS | sha256sum --check - ; then
                 $TMP_HOOKS_PATH/bin/cache-url -f \
-                    $DIB_CLOUD_IMAGES/$DIB_RELEASE/release/$BASE_IMAGE_FILE $CACHED_FILE
+                    $DIB_CLOUD_IMAGES/$DIB_RELEASE/current/$BASE_IMAGE_FILE $CACHED_FILE
                 grep "$BASE_IMAGE_FILE" $CACHED_SUMS | sha256sum --check -
             fi
         fi
